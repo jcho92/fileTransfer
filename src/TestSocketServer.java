@@ -1,26 +1,32 @@
 import java.net.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.*;
 public class TestSocketServer {
 	static Socket socket = null;
+	
     static InputStream in = null;
     static OutputStream out = null;
-     
+    static Socket fileSocket = null; 
+	static ServerSocket fileServerSocket = null;
+	static ServerSocket serverSocket = null;
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = null;
-
+       
         try {
             serverSocket = new ServerSocket(4444);
+            fileServerSocket = new ServerSocket(4445);
         } catch (IOException ex) {
             System.out.println("Can't setup server on this port number. ");
         }
        
         try {
             socket = serverSocket.accept();
-            
+            fileSocket = fileServerSocket.accept();
         } catch (IOException ex) {
             System.out.println("Can't accept client connection. ");
+
+        	System.out.println(ex);
         }
-        
         handleClientCommands();
         serverSocket.close();
     }
@@ -54,34 +60,22 @@ public class TestSocketServer {
 	 }
     }
     
-    public static void createFile(String name, PrintWriter output, String input) throws IOException {
-    	Socket fileSocket = null; 
-    	ServerSocket fileServerSocket = null;
+    public static boolean createFile(String name, PrintWriter output, String input) throws IOException {
+    	
 		 InputStream in = null;
 		 OutputStream out = null;
-    	 
-    	 try {
-    		 fileServerSocket = new ServerSocket(4445);
-    	 } catch(IOException e) {
-    		 System.out.println(e);
-    	 }
-    	 
-    	 try {
-    		 output.println("ready");
-    		 fileSocket = fileServerSocket.accept();   
-    		 
-         } catch (IOException ex) {
-             System.out.println("Can't accept client connection. ");
-         }
-    	 
+		 String filename = "text2test.txt";
+    	 System.out.println("we are now ready to do some file creation");
+    	 output.println("ready");
     		 try {
                  in =  fileSocket.getInputStream();
              } catch (IOException ex) {
+            	 System.out.println(ex);
                  System.out.println("Can't get socket input stream. ");
              }
 
              try {
-                 out = new FileOutputStream("test2.txt");
+                 out = new FileOutputStream("downloadTest/" + filename);
              } catch (FileNotFoundException ex) {
                  System.out.println("File not found. ");
              }
@@ -92,9 +86,10 @@ public class TestSocketServer {
              while ((count = in.read(bytes)) > 0) {
                  out.write(bytes, 0, count);
              }
+             System.out.println("file done transferring");
 	         out.close();
 	         in.close();
-    	
-    	
+    	return true;
     }
 }
+
