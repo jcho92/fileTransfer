@@ -1,8 +1,7 @@
 import java.net.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.*;
 public class TestSocketServer {
+	static int portNumber = 4446;
 	static Socket socket = null;
 	
     static InputStream in = null;
@@ -10,6 +9,7 @@ public class TestSocketServer {
     static Socket fileSocket = null; 
 	static ServerSocket fileServerSocket = null;
 	static ServerSocket serverSocket = null;
+	static Socket useThisSocket = null;
     public static void main(String[] args) throws IOException {
        
         try {
@@ -39,8 +39,14 @@ public class TestSocketServer {
 		 String inputLine;
 		 out.println("you have connected to the server");
 		  while ((inputLine = in.readLine()) != null) {
+			  System.out.println(inputLine);
 			  switch(inputLine) {
 			  case "upload":
+				  out.println(String.valueOf(portNumber));
+				  useThisSocket = setUpNewSocket(portNumber);
+				  break;
+			  case "socket ready":
+				  System.out.println("the socket is ready");
 				  createFile("text2.txt", out, inputLine);
 				  break;
 			  default:
@@ -64,18 +70,17 @@ public class TestSocketServer {
     	
 		 InputStream in = null;
 		 OutputStream out = null;
-		 String filename = "text2test.txt";
     	 System.out.println("we are now ready to do some file creation");
     	 output.println("ready");
     		 try {
-                 in =  fileSocket.getInputStream();
+                 in =  useThisSocket.getInputStream();
              } catch (IOException ex) {
             	 System.out.println(ex);
                  System.out.println("Can't get socket input stream. ");
              }
 
              try {
-                 out = new FileOutputStream("downloadTest/" + filename);
+                 out = new FileOutputStream("downloadTest/" + name);
              } catch (FileNotFoundException ex) {
                  System.out.println("File not found. ");
              }
@@ -86,10 +91,28 @@ public class TestSocketServer {
              while ((count = in.read(bytes)) > 0) {
                  out.write(bytes, 0, count);
              }
-             System.out.println("file done transferring");
 	         out.close();
 	         in.close();
     	return true;
+    }
+    
+    public static Socket setUpNewSocket(int port) {
+    	ServerSocket secondServerSocket = null;
+    	Socket secondTransferSocket = null;
+    	try {
+    		secondServerSocket = new ServerSocket(port);
+    	} catch(IOException e) {
+    		System.out.println(e);
+    	}
+    	
+    	try {
+    		secondTransferSocket = secondServerSocket.accept();
+    	} catch(IOException e) {
+    		System.out.println(e);
+    	}
+    	portNumber ++;
+    	return secondTransferSocket;
+    	
     }
 }
 

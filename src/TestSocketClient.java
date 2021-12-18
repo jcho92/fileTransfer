@@ -5,6 +5,7 @@ public class TestSocketClient {
 	 static Socket socket = null;
      static String host = "127.0.0.1";
      static Socket fileSocket = null;
+     static Socket testSocket = null;
     public static void main(String[] args) throws IOException {
        
 
@@ -21,14 +22,18 @@ public class TestSocketClient {
         	
             while(!end) {
             	String responseFromServer = in.readLine();
-            	if(responseFromServer.equals("ready")) {
+            	
+            	if(responseFromServer.equals("4446")){
+            		testSocket = new Socket(host, Integer.parseInt(responseFromServer));
+            		out.println("socket ready");
+            	}
+            	else if(responseFromServer.equals("ready")) {
             		System.out.println("the server is ready to accept your call: ");
             		System.out.println("do you want to send a file?");
             		
             		if(stdIn.readLine().equals("yes")) {
             			System.out.println("alright sending file now");
             			sendFile();
-            			System.out.println("file is completed");
             		}else {
             			System.out.println("yes was not typed, not sending file now");
             		}
@@ -56,7 +61,7 @@ public class TestSocketClient {
 	
 	   try(
 		   InputStream in = new FileInputStream(file);
-		   OutputStream out = fileSocket.getOutputStream();
+		   OutputStream out = testSocket.getOutputStream();
 			   ){
 		   int count;
 		   while ((count = in.read(bytes)) > 0) {
